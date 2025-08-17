@@ -1,0 +1,225 @@
+/* src/Pages/Dashboard.css - VERSÃO FINAL V2 */
+
+.dashboard-page-v2 {
+    animation: fade-in 0.5s ease-out;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Cabeçalho */
+.dashboard-header-v2 {
+    margin-bottom: 24px;
+}
+
+.dashboard-header-v2 h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--gc-red, #dc3545);
+    margin: 0 0 4px;
+}
+
+.dashboard-header-v2 p {
+    font-size: 16px;
+    color: var(--muted, #6b7280);
+    margin: 0;
+}
+
+/* Grid de Estatísticas */
+.stats-grid-v2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.stat-card-v2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    padding: 20px;
+    border: 1px solid #f1f1f1;
+    border-radius: 12px;
+    background: linear-gradient(to top, #ffffff 0%, #fcfdff 100%);
+}
+
+.stat-info-v2 {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-title-v2 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted, #6b7280);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.stat-value-v2 {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text, #1f2937);
+}
+
+.stat-icon-v2 {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--gc-red, #dc3545), #fca5a5);
+    color: #fff;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+/* Card Genérico */
+.card-v2 {
+    margin-top: 24px;
+    background-color: #fff;
+    border: 1px solid #f1f1f1;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.card-header-v2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.header-icon-v2 {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background-color: var(--gc-red, #dc3545);
+    color: #fff;
+    font-size: 16px;
+}
+
+.card-header-v2 h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text, #1f2937);
+    margin: 0;
+}
+
+/* Lista de Atividades (reutiliza o estilo anterior) */
+.activity-list {
+    /* ... (pode manter o CSS anterior para activity-list e activity-item) ... */
+}
+
+/* Componente de Estado Vazio */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.empty-state-icon {
+    width: 64px;
+    height: 64px;
+    display: grid;
+    place-items: center;
+    background-color: #f3f4f6;
+    border-radius: 50%;
+    color: #9ca3af;
+    font-size: 28px;
+    margin-bottom: 16px;
+}
+
+.empty-state h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text, #1f2937);
+    margin: 0 0 4px;
+}
+
+.empty-state p {
+    font-size: 14px;
+    color: var(--muted, #6b7280);
+    margin: 0;
+    max-width: 300px;
+}
+
+/* --- Estilos para o Filtro de Data (VERSÃO MELHORADA) --- */
+
+/* 1. ATUALIZADO o cabeçalho para usar Flexbox */
+.dashboard-header-v2 {
+    display: flex;
+    justify-content: space-between;
+    /* Alinha os itens (título e filtro) nas extremidades */
+    align-items: flex-start;
+    /* Alinha no topo */
+    margin-bottom: 24px;
+}
+
+/* O container que nos permite usar posicionamento absoluto */
+.date-picker-wrapper {
+    position: relative;
+}
+
+/* O botão que o utilizador vê */
+.date-picker-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 8px;
+    background-color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text, #1f2937);
+    transition: background-color 0.2s ease;
+    min-width: 220px;
+    /* Largura mínima para acomodar as datas */
+    justify-content: center;
+}
+
+.date-picker-button:hover {
+    background-color: #f9fafb;
+}
+
+/* 2. ATUALIZADO o posicionamento do calendário */
+.date-picker-calendar {
+    position: absolute;
+    top: calc(100% + 8px);
+    /* Posiciona abaixo do botão */
+    right: 0;
+    /* Alinha à direita do wrapper */
+    z-index: 10;
+
+    background-color: #fff;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 8px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Ajustes no tema do react-day-picker */
+.date-picker-calendar .rdp-button_selected {
+    background-color: var(--gc-red, #dc3545) !important;
+    color: #fff;
+}
+
+
+/* Animação de Shimmer (reutilizada) */
+.loading-shimmer {}
+
+/* ... (pode manter o CSS anterior para loading-shimmer) ... */

@@ -1,0 +1,38 @@
+/* SUBSTITUA TODO O CONTEÚDO DE App.css POR ISTO */
+
+/* Define o layout principal da aplicação usando Flexbox.
+   Isto cria as "duas colunas" para a sidebar e o conteúdo. */
+.app {
+  display: flex;
+  min-height: 100vh;
+  /* Garante que a aplicação ocupe sempre a altura total da tela */
+}
+
+/* Define como a área de conteúdo principal deve crescer. */
+.main-content {
+  flex-grow: 1;
+  /* Faz com que o conteúdo principal ocupe todo o espaço restante */
+  padding: 24px;
+  background-color: #f9fafb;
+  /* Fundo cinza claro para a área de conteúdo */
+  overflow-y: auto;
+  /* Adiciona scroll se o conteúdo for maior que a tela */
+}
+
+#nprogress .bar {
+  background: var(--gc-red, #dc3545) !important;
+  height: 3px !important;
+  z-index: 9999 !important;
+  /* Garante que fique por cima de tudo */
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px var(--gc-red, #dc3545), 0 0 5px var(--gc-red, #dc3545) !important;
+}
+
+/* (Opcional) Um contêiner para limitar a largura do conteúdo dentro da página. */
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  /* Centraliza o conteúdo se houver uma largura máxima */
+}

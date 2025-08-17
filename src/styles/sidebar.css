@@ -1,0 +1,93 @@
+/* src/components/Sidebar.css */
+
+.sidebar {
+    width: 260px;
+    /* Largura fixa */
+    min-height: 100vh;
+    background: #fff;
+    border-right: 1px solid #e9ecef;
+    display: flex;
+    flex-direction: column;
+    /* Organiza os itens verticalmente */
+}
+
+.sidebar-header {
+    padding: 20px 16px;
+    background: var(--gc-red, #dc3545);
+    /* Usa a variável global ou um fallback */
+    color: #fff;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.sidebar-nav {
+    padding: 12px;
+    flex-grow: 1;
+    /* Faz a navegação ocupar o espaço disponível, empurrando o logout para baixo */
+}
+
+.nav-link {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 8px;
+    color: #344054;
+    /* Cor de texto mais profissional */
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.nav-link:hover {
+    background-color: #f9fafb;
+    /* Fundo suave ao passar o rato */
+}
+
+/* Estilo para o link ativo */
+.nav-link.active {
+    background-color: #fef2f2;
+    /* Fundo avermelhado bem claro */
+    color: var(--gc-red, #dc3545);
+    font-weight: 600;
+}
+
+.nav-link i {
+    width: 20px;
+    /* Garante que os ícones têm a mesma largura */
+    text-align: center;
+}
+
+/* Estilos para a área de logout */
+.sidebar-footer {
+    padding: 12px;
+    margin-top: auto;
+    /* Garante que o footer fica no fundo */
+    border-top: 1px solid #e9ecef;
+}
+
+.logout-button {
+    /* Reutiliza estilos do nav-link para consistência */
+    width: 100%;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 8px;
+    color: #344054;
+    text-decoration: none;
+    font-weight: 500;
+
+    /* Estilos de botão */
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    /* Usa a mesma fonte do resto da app */
+    font-size: inherit;
+}
+
+.logout-button:hover {
+    background-color: #f9fafb;
+}
