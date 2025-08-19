@@ -7,6 +7,7 @@ type User = {
   nome?: string;
   tipoUsuario?: string;
   empresaId?: number | string | null;
+  motoristaId?: string | null;
 };
 
 type AuthState = {
@@ -62,7 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const userData: User = {
       nome: data.user.nome,
-      tipoUsuario: data.user.tipoUsuario, // Supondo que a API retorna 'tipoUsuario'
+      tipoUsuario: data.user.tipoUsuario,
+      motoristaId: data.user.motoristaId ?? null,
       empresaId: data.user.empresaId,
     };
 

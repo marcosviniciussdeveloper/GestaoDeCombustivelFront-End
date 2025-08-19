@@ -52,6 +52,7 @@ export type FormularioMotoristaCompleto = {
 };
 
 export interface ReadMotoristaDto {
+  veiculoId: any;
   motoristaId: string;
   nome: string;
   email: string;
@@ -59,7 +60,7 @@ export interface ReadMotoristaDto {
   numeroCnh: string;
   validadeCnh: string;
   categoriaCnh: string;
-  statusVinculo: 'ATIVO' | 'INATIVO' | string;
+  status: boolean;
   dataVinculo: string;
 }
 
@@ -135,17 +136,27 @@ export const api = {
       numeroCnh: formData.numeroCnh,
       validadeCnh: formData.validadeCnh,
       categoriaCnh: formData.categoriaCnh,
+      status : true , 
     } );
   },
 
-  async listarMotoristasPorEmpresa(empresaId: string, params?: { q?: string; status?: string }): Promise<ReadMotoristaDto[]> {
-    const qs = new URLSearchParams();
-    if (params?.q) qs.set("q", params.q);
-    if (params?.status && params.status !== 'todos') qs.set("status", params.status);
-    const url = `/api/empresa-motoristas/${empresaId}/lista?${qs.toString()}`;
-    const { data } = await http.get<ReadMotoristaDto[]>(url );
-    return Array.isArray(data) ? data : [];
-  },
+async listarMotoristasPorEmpresa(
+  empresaId: string,
+  params?: { q?: string; status?: boolean }
+): Promise<ReadMotoristaDto[]> {
+  const qs = new URLSearchParams();
+
+  if (params?.q) qs.set("q", params.q);
+
+  if (typeof params?.status === 'boolean') {
+    qs.set("status", String(params.status)); // envia "true" ou "false"
+  }
+
+  const url = `/api/empresa-motoristas/${empresaId}/lista?${qs.toString()}`;
+  const { data } = await http.get<ReadMotoristaDto[]>(url);
+  return Array.isArray(data) ? data : [];
+},
+
 
   async getMotoristaById(motoristaId: string): Promise<ReadMotoristaDto> {
     const { data } = await http.get<ReadMotoristaDto>(`/api/motorista/${motoristaId}` );
@@ -156,27 +167,18 @@ export const api = {
     await http.put(`/api/motorista/${motoristaId}`, formData );
   },
 
-  async atualizarStatusMotorista(motoristaId: string, novoStatus: string): Promise<void> {
+  async atualizarStatusMotorista(motoristaId: string, novoStatus: boolean): Promise<void> {
     await http.patch(`/api/motorista/${motoristaId}/status`, { status: novoStatus } );
   },
 
-  // --- FUNÇÕES DE ABASTECIMENTO E VEÍCULO (ADICIONADAS) ---
-
-  // 2. ADICIONADA A FUNÇÃO 'listarVeiculos' QUE ESTAVA EM FALTA
-  /**
-   * Lista os veículos disponíveis para uma empresa.
-   * (Ajuste o endpoint se for diferente)
-   */
+  
+   
   async listarVeiculos(empresaId: string): Promise<Veiculo[]> {
     const { data } = await http.get<Veiculo[]>(`/api/veiculos/empresa/${empresaId}` );
     return Array.isArray(data) ? data : [];
   },
 
-  // 3. ADICIONADA A FUNÇÃO 'registrarAbastecimento' QUE ESTAVA EM FALTA
-  /**
-   * Registra um novo abastecimento no sistema.
-   * Corresponde a: POST /api/Abastecimento
-   */
+ 
   async registrarAbastecimento(formData: FormularioAbastecimento): Promise<void> {
     await http.post('/api/Abastecimento', formData );
   },

@@ -6,8 +6,6 @@ import { useAuth } from '../providers/authProvider';
 import type { ReadMotoristaDto, FormularioMotoristaCompleto } from '../api';
 import '../styles/Motorista.css';
 
-// --- COMPONENTES DE VISUALIZAÇÃO (LISTA) ---
-
 const KpiCard = ({ icon, title, value, color, isLoading }: any) => (
   <div className={`kpi-card ${color}`}>
     <div className="kpi-info">
@@ -21,11 +19,15 @@ const KpiCard = ({ icon, title, value, color, isLoading }: any) => (
 const MotoristaCard = ({ motorista, onEdit, onStatusChange }: {
   motorista: ReadMotoristaDto;
   onEdit: (motorista: ReadMotoristaDto) => void;
-  onStatusChange: (motoristaId: string, novoStatus: string) => void;
+  onStatusChange: (motoristaId: string, novoStatus: boolean) => void;
 }) => {
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onStatusChange(motorista.motoristaId!, e.target.value);
+    const novoStatus = e.target.value === 'true';
+    onStatusChange(motorista.motoristaId!, novoStatus);
   };
+
+  const statusAtual = motorista.status  ?? true;
+  const statusClasse = statusAtual ? "ativo" : "status-inativo";
 
   return (
     <div className="motorista-card">
@@ -37,12 +39,12 @@ const MotoristaCard = ({ motorista, onEdit, onStatusChange }: {
           <h3 className="motorista-nome">{motorista.nome}</h3>
           <div className="motorista-actions">
             <select
-              value={motorista.statusVinculo || 'ativo'}
+              value={String(motorista.status)}
               onChange={handleStatusChange}
-              className={`status-select ${(motorista.statusVinculo || 'ativo').toLowerCase()}`}
+              className={`status-select ${statusClasse}`}
             >
-              <option value="ativo">Ativo</option>
-              <option value="inativo">Inativo</option>
+              <option value="true">Ativo</option>
+              <option value="false">Inativo</option>
             </select>
             <button
               className="btn-edit"
@@ -54,7 +56,6 @@ const MotoristaCard = ({ motorista, onEdit, onStatusChange }: {
           </div>
         </div>
       </div>
-
       <div className="motorista-card-body">
         <div className="motorista-detail">
           <i className="fa-solid fa-envelope"></i>
@@ -69,7 +70,6 @@ const MotoristaCard = ({ motorista, onEdit, onStatusChange }: {
           <span>CNH: {motorista.categoriaCnh}</span>
         </div>
       </div>
-
       <div className="motorista-card-footer">
         <span className="data-vinculo">
           Desde: {motorista.dataVinculo ? new Date(motorista.dataVinculo).toLocaleDateString('pt-BR') : '-'}
@@ -91,23 +91,32 @@ const ListaMotoristasView = ({ onCadastrarClick, onEditarClick }: {
 
   const { data: motoristas, isLoading } = useQuery({
     queryKey: ['motoristas', empresaId, searchTerm, statusFilter],
-    queryFn: () => api.listarMotoristasPorEmpresa(String(empresaId!), { q: searchTerm, status: statusFilter }),
+    queryFn: () => {
+      const params: { q?: string; status?: boolean } = {};
+      if (searchTerm) {
+        params.q = searchTerm;
+      }
+      if (statusFilter !== 'todos') {
+        params.status = statusFilter === 'ativo';
+      }
+      return api.listarMotoristasPorEmpresa(String(empresaId!), params);
+    },
     enabled: !!empresaId,
   });
 
   const { mutateAsync: updateStatus } = useMutation({
-    mutationFn: ({ motoristaId, status }: { motoristaId: string; status: string }) =>
+    mutationFn: ({ motoristaId, status }: { motoristaId: string; status: boolean }) =>
       api.atualizarStatusMotorista(motoristaId, status),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['motoristas'] });
       toast.success('Status do motorista atualizado com sucesso!');
+      queryClient.invalidateQueries({ queryKey: ['motoristas', empresaId] });
     },
     onError: (error: any) => {
       toast.error(error.message || 'Erro ao atualizar status do motorista');
     }
   });
 
-  const handleStatusChange = (motoristaId: string, novoStatus: string) => {
+  const handleStatusChange = (motoristaId: string, novoStatus: boolean) => {
     updateStatus({ motoristaId, status: novoStatus });
   };
 
@@ -115,7 +124,7 @@ const ListaMotoristasView = ({ onCadastrarClick, onEditarClick }: {
     if (!motoristas) return { ativos: 0, total: 0 };
     return {
       total: motoristas.length,
-      ativos: motoristas.filter(m => m.statusVinculo?.toLowerCase() === 'ativo').length,
+      ativos: motoristas.filter(m => m.status).length,
     };
   }, [motoristas]);
 
@@ -137,7 +146,6 @@ const ListaMotoristasView = ({ onCadastrarClick, onEditarClick }: {
           isLoading={isLoading}
         />
       </div>
-
       <div className="toolbar">
         <div className="search-container">
           <div className="search-input">
@@ -158,14 +166,12 @@ const ListaMotoristasView = ({ onCadastrarClick, onEditarClick }: {
             <option value="ativo">Ativo</option>
             <option value="inativo">Inativo</option>
           </select>
-          {/* O BOTÃO FOI MOVIDO PARA DENTRO DESTE GRUPO */}
           <button className="btn btn-primary" onClick={onCadastrarClick}>
             <i className="fa-solid fa-plus"></i>
             Adicionar Motorista
           </button>
         </div>
       </div>
-
       <div className="motoristas-grid">
         {isLoading && (
           Array.from({ length: 6 }).map((_, i) => (
@@ -183,7 +189,6 @@ const ListaMotoristasView = ({ onCadastrarClick, onEditarClick }: {
           />
         ))}
       </div>
-
       {!isLoading && !motoristas?.length && (
         <div className="empty-state">
           <i className="fa-solid fa-users"></i>
@@ -194,8 +199,6 @@ const ListaMotoristasView = ({ onCadastrarClick, onEditarClick }: {
     </div>
   );
 };
-
-// --- COMPONENTE DO FORMULÁRIO DE CADASTRO ---
 
 const FormularioCadastroView = ({
   onCancel,
@@ -215,7 +218,7 @@ const FormularioCadastroView = ({
         numeroCnh: motoristaParaEditar.numeroCnh,
         categoriaCnh: motoristaParaEditar.categoriaCnh,
         validadeCnh: motoristaParaEditar.validadeCnh,
-        senha: '', // Senha sempre vazia para edição
+        senha: '',
       };
     }
     return {};
@@ -228,12 +231,9 @@ const FormularioCadastroView = ({
   const { mutateAsync, isPending } = useMutation({
     mutationFn: (newData: FormularioMotoristaCompleto) => {
       if (!user?.empresaId) throw new Error("Empresa do gestor não encontrada.");
-
       if (isEditing) {
-        // LÓGICA CORRETA: CHAMA A ROTA DE ATUALIZAR
         return api.atualizarMotorista(motoristaParaEditar!.motoristaId!, newData);
       } else {
-        // LÓGICA CORRETA: CHAMA A ROTA DE CADASTRO
         return api.cadastrarMotoristaCompleto(newData, String(user.empresaId));
       }
     },
@@ -262,8 +262,7 @@ const FormularioCadastroView = ({
 
     switch (name) {
       case 'cpf':
-        maskedValue = value.replace(/\D/g, '').slice(0, 11);
-        maskedValue = maskedValue.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        maskedValue = value.replace(/\D/g, '').slice(0, 11).replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
         break;
       case 'numeroCnh':
         maskedValue = value.replace(/\D/g, '').slice(0, 11);
@@ -281,31 +280,22 @@ const FormularioCadastroView = ({
         maskedValue = value.slice(0, 50);
         break;
     }
-
     setFormData({ ...formData, [name]: maskedValue });
   };
 
   const isValidCPF = (cpf: string) => {
     const cleanCPF = cpf.replace(/\D/g, '');
-    if (cleanCPF.length !== 11) return false;
-    if (/^(\d)\1{10}$/.test(cleanCPF)) return false;
-
+    if (cleanCPF.length !== 11 || /^(\d)\1{10}$/.test(cleanCPF)) return false;
     let sum = 0;
-    for (let i = 0; i < 9; i++) {
-      sum += parseInt(cleanCPF[i]) * (10 - i);
-    }
+    for (let i = 0; i < 9; i++) sum += parseInt(cleanCPF[i]) * (10 - i);
     let remainder = (sum * 10) % 11;
     if (remainder === 10 || remainder === 11) remainder = 0;
     if (remainder !== parseInt(cleanCPF[9])) return false;
-
     sum = 0;
-    for (let i = 0; i < 10; i++) {
-      sum += parseInt(cleanCPF[i]) * (11 - i);
-    }
+    for (let i = 0; i < 10; i++) sum += parseInt(cleanCPF[i]) * (11 - i);
     remainder = (sum * 10) % 11;
     if (remainder === 10 || remainder === 11) remainder = 0;
     if (remainder !== parseInt(cleanCPF[10])) return false;
-
     return true;
   };
 
@@ -315,139 +305,56 @@ const FormularioCadastroView = ({
         <div className="form-header">
           <h2>{isEditing ? 'Editar Motorista' : 'Cadastrar Novo Motorista'}</h2>
         </div>
-
         <form className="motorista-form" onSubmit={handleSubmit}>
           <div className="form-section">
             <h3>Dados Pessoais</h3>
             <div className="form-grid">
               <div className="form-group full-width">
                 <label>Nome Completo *</label>
-                <input
-                  name="nome"
-                  type="text"
-                  value={formData.nome || ''}
-                  onChange={handleChange}
-                  required
-                  disabled={isPending}
-                  maxLength={100}
-                  placeholder="Digite o nome completo do motorista"
-                />
+                <input name="nome" type="text" value={formData.nome || ''} onChange={handleChange} required disabled={isPending} maxLength={100} placeholder="Digite o nome completo do motorista" />
               </div>
-
               <div className="form-group">
                 <label>Email *</label>
-                <input
-                  name="email"
-                  type="email"
-                  value={formData.email || ''}
-                  onChange={handleChange}
-                  required
-                  disabled={isPending}
-                  maxLength={255}
-                  placeholder="exemplo@email.com"
-                />
+                <input name="email" type="email" value={formData.email || ''} onChange={handleChange} required disabled={isPending} maxLength={255} placeholder="exemplo@email.com" />
               </div>
-
               <div className="form-group">
                 <label>CPF *</label>
-                <input
-                  name="cpf"
-                  type="text"
-                  value={formData.cpf || ''}
-                  onChange={handleChange}
-                  required
-                  disabled={isPending || isEditing}
-                  maxLength={14}
-                  placeholder="000.000.000-00"
-                  className={formData.cpf && !isValidCPF(formData.cpf) ? 'error' : ''}
-                />
-                {formData.cpf && !isValidCPF(formData.cpf) && formData.cpf.length >= 11 && (
-                  <span className="error-message">CPF inválido</span>
-                )}
+                <input name="cpf" type="text" value={formData.cpf || ''} onChange={handleChange} required disabled={isPending || isEditing} maxLength={14} placeholder="000.000.000-00" className={formData.cpf && !isValidCPF(formData.cpf) ? 'error' : ''} />
+                {formData.cpf && !isValidCPF(formData.cpf) && formData.cpf.length >= 11 && (<span className="error-message">CPF inválido</span>)}
               </div>
-
               <div className="form-group full-width">
                 <label>Senha de Acesso {isEditing ? '(deixe em branco para manter a atual)' : '*'}</label>
-                <input
-                  name="senha"
-                  type="password"
-                  value={formData.senha || ''}
-                  onChange={handleChange}
-                  required={!isEditing}
-                  disabled={isPending}
-                  maxLength={50}
-                  minLength={6}
-                  placeholder="Mínimo 6 caracteres"
-                />
+                <input name="senha" type="password" value={formData.senha || ''} onChange={handleChange} required={!isEditing} disabled={isPending} maxLength={50} minLength={6} placeholder="Mínimo 6 caracteres" />
               </div>
             </div>
           </div>
-
           <div className="form-section">
             <h3>Dados da CNH</h3>
             <div className="form-grid">
               <div className="form-group">
                 <label>Número CNH *</label>
-                <input
-                  name="numeroCnh"
-                  type="text"
-                  value={formData.numeroCnh || ''}
-                  onChange={handleChange}
-                  required
-                  disabled={isPending}
-                  maxLength={11}
-                  placeholder="Digite apenas números"
-                />
+                <input name="numeroCnh" type="text" value={formData.numeroCnh || ''} onChange={handleChange} required disabled={isPending} maxLength={11} placeholder="Digite apenas números" />
               </div>
-
               <div className="form-group">
                 <label>Validade CNH *</label>
-                <input
-                  name="validadeCnh"
-                  type="date"
-                  value={formData.validadeCnh || ''}
-                  onChange={handleChange}
-                  required
-                  disabled={isPending}
-                  min={new Date().toISOString().split('T')[0]}
-                />
+                <input name="validadeCnh" type="date" value={formData.validadeCnh || ''} onChange={handleChange} required disabled={isPending} min={new Date().toISOString().split('T')[0]} />
               </div>
-
               <div className="form-group">
                 <label>Categoria CNH *</label>
-                <input
-                  name="categoriaCnh"
-                  type="text"
-                  value={formData.categoriaCnh || ''}
-                  onChange={handleChange}
-                  required
-                  disabled={isPending}
-                  maxLength={5}
-                  placeholder="A, B, C, D, E"
-                  style={{ textTransform: 'uppercase' }}
-                />
-                <span className="help-text">
-                  Categorias válidas: A, B, C, D, E (pode combinar: AB, AC, etc.)
-                </span>
+                <input name="categoriaCnh" type="text" value={formData.categoriaCnh || ''} onChange={handleChange} required disabled={isPending} maxLength={5} placeholder="A, B, C, D, E" style={{ textTransform: 'uppercase' }} />
+                <span className="help-text">Categorias válidas: A, B, C, D, E (pode combinar: AB, AC, etc.)</span>
               </div>
             </div>
           </div>
-
           <div className="form-actions">
-            <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={isPending}>
-              Cancelar
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={isPending}>
-              {isPending ? 'Salvando...' : (isEditing ? 'Atualizar' : 'Cadastrar')}
-            </button>
+            <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={isPending}>Cancelar</button>
+            <button type="submit" className="btn btn-primary" disabled={isPending}>{isPending ? 'Salvando...' : (isEditing ? 'Atualizar' : 'Cadastrar')}</button>
           </div>
         </form>
       </div>
     </div>
   );
 };
-
-// --- COMPONENTE PRINCIPAL DA PÁGINA ---
 
 export default function MotoristaPage() {
   const [view, setView] = useState<'LISTA' | 'CADASTRO' | 'EDICAO'>('LISTA');
@@ -464,28 +371,12 @@ export default function MotoristaPage() {
   };
 
   if (view === 'CADASTRO') {
-    return (
-      <FormularioCadastroView
-        onCancel={handleVoltarParaLista}
-        onSuccess={handleVoltarParaLista}
-      />
-    );
+    return (<FormularioCadastroView onCancel={handleVoltarParaLista} onSuccess={handleVoltarParaLista} />);
   }
 
   if (view === 'EDICAO') {
-    return (
-      <FormularioCadastroView
-        onCancel={handleVoltarParaLista}
-        onSuccess={handleVoltarParaLista}
-        motoristaParaEditar={motoristaParaEditar}
-      />
-    );
+    return (<FormularioCadastroView onCancel={handleVoltarParaLista} onSuccess={handleVoltarParaLista} motoristaParaEditar={motoristaParaEditar} />);
   }
 
-  return (
-    <ListaMotoristasView
-      onCadastrarClick={() => setView('CADASTRO')}
-      onEditarClick={handleEditarMotorista}
-    />
-  );
+  return (<ListaMotoristasView onCadastrarClick={() => setView('CADASTRO')} onEditarClick={handleEditarMotorista} />);
 }

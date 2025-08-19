@@ -13,14 +13,13 @@ export default function RegistrarAbastecimentoMotorista() {
     const [formData, setFormData] = useState<any>({});
     const { registrarAbastecimento, isSaving } = useAbastecimentoForm();
 
-    // --- CORREÇÃO PRINCIPAL: BUSCAR OS DETALHES DO MOTORISTA ---
+    //
     const { data: detalhesMotorista, isLoading: isLoadingDetalhes } = useQuery({
-        // A queryKey inclui o userId para ser única para cada motorista.
-        queryKey: ['detalhesMotorista', user?.id],
-        // Chama a nova função da nossa API.
-        queryFn: () => api.getDetalhesMotoristaPorUserId(user!.id!),
-        // Só executa se o user.id existir.
-        enabled: !!user?.id,
+        
+       queryKey: ['detalhesMotorista', user?.motoristaId],
+queryFn: () => api.getMotoristaById(user!.motoristaId!),
+enabled: !!user?.motoristaId,
+
     });
 
     const handleSubmit = (e: React.FormEvent) => {

@@ -170,8 +170,9 @@
 }
 
 .btn-primary {
-    width: 100%;
+    width: 150%;
     height: 48px;
+    padding: 10px;
     border: none;
     border-radius: 10px;
     background: linear-gradient(135deg, var(--gc-red), var(--gc-red-600));
@@ -205,9 +206,9 @@
 /* Estiliza e posiciona o botão do olho */
 .password-toggle-btn {
     position: absolute;
-    right: 12px;
+    right: 13px;
     /* Alinha o botão com o centro vertical do input */
-    top: 50%;
+    top: 55%;
     transform: translateY(-50%);
 
     /* Remove estilos de botão padrão */
